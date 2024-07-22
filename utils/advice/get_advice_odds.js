@@ -1,30 +1,10 @@
-require('dotenv').config()
-const axios = require('axios');
+const { get_advice_odds_data } = require('../../rapidAPI/api-calls')
 
-const { get_winner_odds, get_double_chance_odds, get_over_under_odds } = require('../helpers/get_odds')
-
-const API_HEADERS = {
-    'X-RapidAPI-Key': process.env.API_KEY,
-    'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com'
-}
-
-const BOOKMAKER_ID = 8  // Bet365
+const { get_winner_odds, get_double_chance_odds, get_over_under_odds } = require('./get_odds')
 
 exports.odds = async (advice, fixture_id, home_team, away_team) => {
 
-    const options = {
-        method: 'GET',
-        url: 'https://api-football-v1.p.rapidapi.com/v3/odds',
-        params: {
-          fixture: fixture_id,
-          bookmaker: BOOKMAKER_ID
-        },
-        headers: API_HEADERS
-    }
-
-    const res = await axios.request(options)
-
-    const data = res.data.response[0]
+    const data = await get_advice_odds_data(fixture_id)
 
     // Guard clause for games with no bets offered
     if (data === null || data === undefined) return 1

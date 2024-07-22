@@ -1,75 +1,10 @@
-require('dotenv').config()
-const axios = require('axios')
-const advice_odds = require('./get_advice_odds')
-
-const API_HEADERS = {
-    'X-RapidAPI-Key': process.env.API_KEY,
-    'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com'
-}
-
-const SEASON = '2024'
-
-
-const get_advice = async (fixture_id) => {
-
-    const options = {
-        method: 'GET',
-        url: 'https://api-football-v1.p.rapidapi.com/v3/predictions',
-        params: {fixture: fixture_id},
-        headers: API_HEADERS
-    };
-    
-    try {
-        const res = await axios.request(options);
-        return res.data.response[0].predictions.advice
-    } catch (error) {
-        console.error(error);
-    }
-
-}
-
-
-const get_form = async (league_id, team_id) => {
-
-    const options = {
-        method: 'GET',
-        url: 'https://api-football-v1.p.rapidapi.com/v3/teams/statistics',
-        params: {
-          league: league_id,
-          team: team_id,
-          season: SEASON,
-        },
-        headers: API_HEADERS
-    }
-
-    try {
-        const res = await axios.request(options)
-        const data = res.data.response
-        const form = data.form
-        return form
-
-    } catch (error) {
-        console.error(error)
-    }
-}
-
+const advice_odds = require('./advice/get_advice_odds')
+const { get_fixture_data, get_advice, get_form } = require('../rapidAPI/api-calls')
 
 const get_team_fixture = async (teamID) => {
-
-    const options = {
-        method: 'GET',
-        url: 'https://api-football-v1.p.rapidapi.com/v3/fixtures',
-        params: {
-            season: SEASON,
-            team: teamID,
-            next: '1'    //Get only the next 1 fuxture
-        },
-        headers: API_HEADERS
-    }
       
     try {
-        const res = await axios.request(options);
-        const data = res.data.response[0];
+        const data = await get_fixture_data(teamID)
         const home_team_id = data.teams.home.id
         const home_team = data.teams.home.name
         const away_team_id = data.teams.away.id
@@ -97,6 +32,7 @@ const get_team_fixture = async (teamID) => {
                 }
     } catch (error) {
         console.error(error)
+        throw error
     }
 
 }
